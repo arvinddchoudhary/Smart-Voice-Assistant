@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import API_BASE_URL from '../../config';
-const HomeScreen: React.FC = () => {
+
+const Index: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
   const [responseData, setResponseData] = useState<string>('');
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [calendarEvents, setCalendarEvents] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<string[]>([]);
 
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
@@ -39,25 +43,11 @@ const HomeScreen: React.FC = () => {
     const url = `${API_BASE_URL}/nlp/process/?text=${encodeURIComponent(inputText)}`;
 
     try {
-      const response = await fetch(url, {
-        method: "GET",
+      const response = await axios.get(url, {
         headers: { "Content-Type": "application/json" },
       });
 
-      const textResponse = await response.text();
-
-      if (!response.ok) {
-        setResponseData(`❌ Server Error: ${response.status} - ${textResponse}`);
-        return;
-      }
-
-      let data;
-      try {
-        data = JSON.parse(textResponse);
-      } catch (jsonError) {
-        setResponseData("⚠️ Invalid JSON response from server.");
-        return;
-      }
+      const data = response.data;
 
       if (data.status === "success") {
         setResponseData(`
@@ -68,6 +58,8 @@ const HomeScreen: React.FC = () => {
           📝 Key Points: ${data.meeting_details.key_points.length ? data.meeting_details.key_points.join(". ") : "None"}
           📄 Summary: ${data.summary}
         `);
+        setCalendarEvents(data.calendar_events || []);
+        setTasks(data.tasks || []);
       } else {
         setResponseData("⚠️ Unexpected response format.");
       }
@@ -78,7 +70,6 @@ const HomeScreen: React.FC = () => {
       setIsProcessing(false);
     }
   };
-
   return (
     <div style={styles.container}>
       <div style={styles.glassPanel}>
@@ -134,6 +125,29 @@ const HomeScreen: React.FC = () => {
               <p style={styles.placeholderText}>Waiting for input...</p>
             )}
           </div>
+        </div>
+        <div style={styles.actionSection}>
+          <h2 style={styles.actionTitle}>Calendar Events</h2>
+          <ul style={styles.actionList}>
+            {calendarEvents.length ? (
+              calendarEvents.map((event, index) => (
+                <li key={index} style={styles.actionItem}>{event}</li>
+              ))
+            ) : (
+              <li style={styles.noActionItem}>No calendar events found.</li>
+            )}
+          </ul>
+
+          <h2 style={styles.actionTitle}>Tasks</h2>
+          <ul style={styles.actionList}>
+            {tasks.length ? (
+              tasks.map((task, index) => (
+                <li key={index} style={styles.actionItem}>{task}</li>
+              ))
+            ) : (
+              <li style={styles.noActionItem}>No tasks found.</li>
+            )}
+          </ul>
         </div>
       </div>
     </div>
@@ -297,7 +311,6 @@ const styles = {
       boxShadow: 'none',
     },
   },
-  
 
   loader: {
     color: 'white',
@@ -366,6 +379,39 @@ const styles = {
     textAlign: 'center',
     padding: '2rem 0',
   },
+
+  actionSection: {
+    marginTop: '2rem',
+    padding: '1rem',
+    background: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+  },
+
+  actionTitle: {
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    marginBottom: '1rem',
+    color: '#111827',
+  },
+
+  actionList: {
+    listStyleType: 'none',
+    padding: 0,
+    margin: 0,
+  },
+
+  actionItem: {
+    padding: '0.5rem 0',
+    borderBottom: '1px solid #E5E7EB',
+    color: '#1F2937',
+  },
+
+  noActionItem: {
+    padding: '0.5rem 0',
+    color: '#6B7280',
+    fontStyle: 'italic',
+  },
 } as const;
 
-export default HomeScreen;
+export default Index;
