@@ -76,15 +76,17 @@ smart-voice-assistant/
 │   ├── manage.py            # Django Entry Point
 │   └── requirements.txt     # Backend Dependencies
 │
-├── frontend/                # React Frontend
-│   ├── src/
-│   │   ├── screens/
-│   │   │   └── HomeScreen.tsx  # Main UI Component
-│   │   └── config.js        # API Base URL
-│   ├── public/
+├── sva-frontend/            # React Frontend
+│   ├── app/                 # Main App Directory
+│   │   ├── tabs/           
+│   │   │   └── index.tsx    # Main UI Component
+│   │
+│   ├── config.js            # API Base URL Configuration
+│   ├── public/              # Public Assets (images, icons, etc.)
 │   └── package.json         # Frontend Dependencies
 │
 └── README.md                 # Project Documentation
+
 ```
 
 ---
